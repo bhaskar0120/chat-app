@@ -1,5 +1,6 @@
 <script>
     import firebase from '@firebase/app';
+    import '@firebase/firestore';
     import "@firebase/auth";
     import VirtualList from './_VList.svelte';
 
@@ -21,7 +22,7 @@ import GroupSider from './_groupSider.svelte';
         firebase.initializeApp(firebaseConfig);
     else
         firebase.app();
-
+    const db  = firebase.firestore();
 
     let sorry = false;
     let uid;
