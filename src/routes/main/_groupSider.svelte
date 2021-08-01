@@ -6,7 +6,7 @@
     }
 </style>
 
-<div class="container" style="height:90vh">
+<div class="container" style="height:80vh">
     <h1 style="font-weight: 200; font-size:30px;">Members</h1>
     <hr>
 

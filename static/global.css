@@ -59,6 +59,18 @@
 	border-radius: 3px;
 	transition:300ms;
 }
+.gray{
+	width:30vh;
+	height:4vh;
+	background-color: #14202c;
+	font-size:x-large;
+	text-align: center;
+	margin-top:20px;
+	border: solid 1px #101922;
+	border-radius: 3px;
+	color:gray
+	
+}
 .button:hover{
 	background-color: var(--yell);
 }
