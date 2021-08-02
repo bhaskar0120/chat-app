@@ -2,6 +2,7 @@
     import List from "./_list.svelte";
     import {goto} from '$app/navigation';
     export let hidden = false;
+    export let showB = true;
     let gname = "";
     let clicked = false;
     function clickHandler(){
@@ -18,10 +19,13 @@
         height: 88vh;
         margin-left: 0;
     }
+    .borderS{
+        border-right: solid 1px rgba(30,100,100,0.5);
+    }
 </style>
 
 {#if hidden}
-<div style="margin-right:3vw;" class={(clicked)?"open":""}>
+<div style="margin-right:3vw;display: flex; justify-content: center;" class={(clicked)?"open":""}>
     <ul style="list-style: none; margin:0px; padding:0px;">
         <li>
             <div on:click={()=>clicked ^= true}>
@@ -47,7 +51,7 @@
     </ul>
 </div>
 {:else}
-<div style="border-right: solid 1px rgba(30,100,100,0.5);margin:1vh 2vw 1vh 2vw;font-size:large; height:80vh;">
+<div class={(showB)?"borderS":""} style="margin:1vh 2vw 1vh 2vw;font-size:large; height:80vh;">
     <input type="text" placeholder="Chat" class="bord" bind:value={gname}>
     <div class={(gname)?"button":"gray"} style="width:90%;font-size:large;text-align: center;padding:2px 0 0 0;" on:click={clickHandler}>Join Group</div>
     <List/>

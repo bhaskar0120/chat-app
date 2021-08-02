@@ -8,6 +8,7 @@
 <script>
     import GroupSider from './main/_groupSider.svelte';
     export let page;
+
 </script>
 {page}
-<GroupSider/>
+<GroupSider data={[]} showB={false}/>
