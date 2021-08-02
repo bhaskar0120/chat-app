@@ -1,14 +1,19 @@
 <script>
+    //firebase
     import firebase from '@firebase/app';
     import '@firebase/firestore';
     import "@firebase/auth";
+
+    //list
     import VirtualList from './_VList.svelte';
 
+    //Svelte Components
     import Right from './_rightc.svelte';
     import Nli from './_nli.svelte';
-    import { tick } from 'svelte';
-import GroupSider from './_groupSider.svelte';
+    import GroupSider from './_groupSider.svelte';
 
+    //svelte
+    import { tick } from 'svelte';
     const firebaseConfig = {
         apiKey: "AIzaSyAzuKsT78lSON8_qXfqCP6tmhnMlhXSDRQ",
         authDomain: "first-768e3.firebaseapp.com",
