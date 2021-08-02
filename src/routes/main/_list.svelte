@@ -1,10 +1,10 @@
 <script>
     import {createEventDispatcher} from 'svelte';
     export let highl = false;
+    export let index;
     const dip= createEventDispatcher();
     function onClick(){
-        highl ^= true;
-        dip('changed', {val:highl});
+        dip('changed', {val:highl,index:index});
 
     }
 

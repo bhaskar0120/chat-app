@@ -20,6 +20,14 @@
     function signOut(){
         dispatch('signout',{name:"logout"});
     }
+
+    let count = 0;
+    //Think of a better change function by remembering the last and current
+    function change(event){
+        for(let i = 0; i < count; ++i){
+            if(event.detail.index == i){}
+        }
+    }
 </script>
 
 <style>
@@ -33,6 +41,7 @@
     }
     .borderS{
         border-right: solid 1px rgba(30,100,100,0.5);
+        transition: 300ms;
     }
 </style>
 
@@ -69,7 +78,7 @@
 
     <input type="text" placeholder="New Group Name" class="bord" bind:value={newname} style="font-size: medium; ">
     <div class={(newname)?"button":"gray"} style="width:12vw;font-size:large;text-align: center; margin: 0 0 0 .7vw" on:click={createHandler}>Create Group</div>
-    <List/>
+    <List on:changed={change}/>
     <div class="button"style="width:12vw;font-size:large;text-align: center; margin: 10vh 0 0 .7vw; " on:click={signOut}>Sign Out</div>
 </div>
 {/if}
