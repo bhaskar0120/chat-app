@@ -1,13 +1,7 @@
-<script context="module">
-    export async function load(cont){
-        let group = cont.page.params.group;
-        return {props: {page:group}};
-    }
-
-</script>
 <script>
     import GroupSider from './main/_groupSider.svelte';
     export let page;
+    //to add a store to read from;
 
 </script>
 {page}

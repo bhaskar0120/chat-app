@@ -1,12 +1,20 @@
 <script>
     import List from "./_list.svelte";
     import {goto} from '$app/navigation';
+    import {createEventDispatcher} from 'svelte';
+
     export let hidden = false;
     export let showB = true;
-    let gname = "";
+    let gname = "", newname="";
     let clicked = false;
-    function clickHandler(){
-        //pass
+    const dispatch = createEventDispatcher();
+    function joinHandler(){
+        if(gname)
+            dispatch('join',{name:gname});
+    }
+    function createHandler(){
+        if(newname)
+            dispatch('create',{name:newname});
     }
 </script>
 
@@ -52,8 +60,11 @@
 </div>
 {:else}
 <div class={(showB)?"borderS":""} style="margin:1vh 2vw 1vh 2vw;font-size:large; height:80vh;">
-    <input type="text" placeholder="Chat" class="bord" bind:value={gname}>
-    <div class={(gname)?"button":"gray"} style="width:90%;font-size:large;text-align: center;padding:2px 0 0 0;" on:click={clickHandler}>Join Group</div>
+    <input type="text" placeholder="Enter Group Code" class="bord" bind:value={gname} style="font-size: medium; ">
+    <div class={(gname)?"button":"gray"} style="width:12vw;font-size:large;text-align: center; margin: 0 0 0 .7vw" on:click={joinHandler}>Join Group</div>
+
+    <input type="text" placeholder="New Group Name" class="bord" bind:value={newname} style="font-size: medium; ">
+    <div class={(newname)?"button":"gray"} style="width:12vw;font-size:large;text-align: center; margin: 0 0 0 .7vw" on:click={createHandler}>Create Group</div>
     <List/>
 </div>
 {/if}

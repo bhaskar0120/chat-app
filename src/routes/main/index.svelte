@@ -40,6 +40,7 @@
     sorry = false; // To remove before production
 
     const db  = firebase.firestore();
+
     //const usr = db.collection('usr').doc(`${uid}`);
     // usr.get()
     // .then(dat=>{
@@ -54,6 +55,45 @@
     // .catch(err=>{
     //     console.log(err)
     // });
+
+        
+    function createHandler(){
+        console.log("create");
+
+    }
+    function joinHandler(event){
+        console.log("join",event.detail.name);
+        const joiner = db.collection('chat').doc(event.detail.name);
+        joiner.get()
+        .then(dat=>{
+            if(dat.exists){
+                let gname = dat.data().name;
+                //first
+                joiner.update({perm:firebase.firestore.FieldValue.arrayUnion(uid)})
+                .then(dat=>{
+                    console.log("Success 1");
+                })
+                .catch(console.error);
+                
+                //second
+                joiner.update({name:firebase.firestore.FieldValue.arrayUnion(userName)});
+                db.collection('usr').doc(uid)
+                .then(dat=>{
+                    console.log("Success 2");
+                })
+                .catch(console.error);
+
+                //third
+                db.collection('usr').doc(uid).update({groups:firebase.firestore.FieldValue.arrayUnion({name: gname, id: event.detail.name })})
+                .then(dat=>{
+                    console.log("Success 3")
+                })
+                .catch(console.error);
+
+            }
+        })
+    }
+
     let arr = [];
     let count = 1;
     let sti;
@@ -77,7 +117,7 @@
         border-radius: 5px; 
         display: inline-block;
         padding:10px;
-        margin : 10px 20px 10px 20px;
+        margin : 5px 20px 10px 20px;
         font-size: larger;
     
     }
@@ -110,7 +150,7 @@
 <svelte:window bind:innerWidth/>
 <div class="cont">
     <div>
-    <Right hidden={innerWidth <= 720}/>
+    <Right hidden={innerWidth <= 720} on:join={joinHandler}  on:create={createHandler}/>
     </div>
     <div class="bc" >
         <h1 style="font-weight: 200; font-size:30px">
@@ -119,7 +159,7 @@
         </h1>
         <div class="scroll" id="box">
              <VirtualList bind:scrollToIndex={sti} items={arr} let:item>
-                <div class={(item.count%2 == 0)? "right bubble":"bubble"} style="">
+                <div class={(item.count%3 == 0)? "right bubble":"bubble"} style="">
                     <span style="font-size: small;color:#ccc">
                         Name <!--Name to add-->
                     </span>
@@ -136,7 +176,7 @@
    </div>
    {#if innerWidth > 720}
    <div>
-       <GroupSider/>
+       <GroupSider />
    </div>
    {/if}
 </div>
