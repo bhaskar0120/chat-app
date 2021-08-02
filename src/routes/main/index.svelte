@@ -119,7 +119,11 @@
         </h1>
         <div class="scroll" id="box">
              <VirtualList bind:scrollToIndex={sti} items={arr} let:item>
-                <div class={(item.count%2 == 0)? "right bubble":"bubble"}>
+                <div class={(item.count%2 == 0)? "right bubble":"bubble"} style="">
+                    <span style="font-size: small;color:#ccc">
+                        Name <!--Name to add-->
+                    </span>
+                    <br>
                     {item.name}
                 </div>
             </VirtualList>
