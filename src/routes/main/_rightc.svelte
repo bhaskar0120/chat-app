@@ -16,6 +16,10 @@
         if(newname)
             dispatch('create',{name:newname});
     }
+    
+    function signOut(){
+        dispatch('signout',{name:"logout"});
+    }
 </script>
 
 <style>
@@ -66,5 +70,6 @@
     <input type="text" placeholder="New Group Name" class="bord" bind:value={newname} style="font-size: medium; ">
     <div class={(newname)?"button":"gray"} style="width:12vw;font-size:large;text-align: center; margin: 0 0 0 .7vw" on:click={createHandler}>Create Group</div>
     <List/>
+    <div class="button"style="width:12vw;font-size:large;text-align: center; margin: 10vh 0 0 .7vw; " on:click={signOut}>Sign Out</div>
 </div>
 {/if}

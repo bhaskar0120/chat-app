@@ -14,6 +14,7 @@
 
     //svelte
     import { tick } from 'svelte';
+import { goto } from '$app/navigation';
     const firebaseConfig = {
         apiKey: "AIzaSyAzuKsT78lSON8_qXfqCP6tmhnMlhXSDRQ",
         authDomain: "first-768e3.firebaseapp.com",
@@ -56,6 +57,16 @@
     //     console.log(err)
     // });
 
+    function signOut(){
+        firebase.auth().signOut()
+        .then(succ=>{
+            goto('/');
+        })
+        .catch(err=>{
+            console.error(err);
+        });
+
+    }
         
     function createHandler(){
         console.log("create");
@@ -150,7 +161,7 @@
 <svelte:window bind:innerWidth/>
 <div class="cont">
     <div>
-    <Right hidden={innerWidth <= 720} on:join={joinHandler}  on:create={createHandler}/>
+    <Right hidden={innerWidth <= 720} on:join={joinHandler}  on:create={createHandler} on:signout={signOut}/>
     </div>
     <div class="bc" >
         <h1 style="font-weight: 200; font-size:30px">

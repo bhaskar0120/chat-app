@@ -20,15 +20,18 @@
     function errorFunc(e){
         err = e.message;
     }
+    function gmail(){
+        firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider)
+        .then(succ=>{
+            goto('/main');
+        })
+        .catch(errorFunc);
+    }
     function onClick(){
         if(email && password){
             firebase.auth().signInWithEmailAndPassword(email,password)
             .then(userC=>{
-                console.log(userC.user.uid);
-
-                goto('/main');
-
-                firebase.auth().signOut();
+               goto('/main');
             })
             .catch(errorFunc);
         }
@@ -56,6 +59,7 @@
                 <input type="email" placeholder="Email" bind:value={email} style="height:3vh;width:30vh;border-radius:3px;border:solid 0.5px gray">
                 <input type="password" placeholder="Password" bind:value={password} style="height:3vh;width:30vh;border-radius:3px;border:solid 0.5px gray">
                 <div class="button" on:click={onClick}>Login</div>
+                <div class="button" on:click={gmail}>Login with Google</div>
                 {#if err}
                 <div style="padding:10px;margin-top:2vh;border-radius: 5px; background:rgba(255, 110, 110, 0.6); font-size: medium;">{err}</div>
                 {/if}
