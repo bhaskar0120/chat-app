@@ -27,21 +27,33 @@
         firebase.initializeApp(firebaseConfig);
     else
         firebase.app();
-    const db  = firebase.firestore();
 
     let sorry = false;
-    let uid;
+    let uid = "";
 
     if(firebase.auth().currentUser == null){
         sorry = true;
     }
     else{
         uid = firebase.auth().currentUser.uid;
-    }
+    } // To add closure just push this to the end
     sorry = false; // To remove before production
 
-
-    let start, end;
+    const db  = firebase.firestore();
+    //const usr = db.collection('usr').doc(`${uid}`);
+    // usr.get()
+    // .then(dat=>{
+    //     if(dat.exists){
+    //         console.log("It exists");
+    //         console.log(dat.data());
+    //     }
+    //     else{
+    //         usr.set({Message:"Welcome to the app"});
+    //     }
+    // })
+    // .catch(err=>{
+    //     console.log(err)
+    // });
     let arr = [];
     let count = 1;
     let sti;
@@ -55,6 +67,7 @@
     }
     let innerWidth;
 </script>
+
 <style>
     .right{
         float:right;
@@ -105,7 +118,7 @@
             <hr style="margin-bottom: 1vh;">
         </h1>
         <div class="scroll" id="box">
-             <VirtualList bind:scrollToIndex={sti} items={arr} bind:start bind:end let:item>
+             <VirtualList bind:scrollToIndex={sti} items={arr} let:item>
                 <div class={(item.count%2 == 0)? "right bubble":"bubble"}>
                     {item.name}
                 </div>
@@ -117,8 +130,10 @@
         </div>
         <button on:click={func}>Click here</button>
    </div>
+   {#if innerWidth > 720}
    <div>
        <GroupSider/>
    </div>
+   {/if}
 </div>
 
