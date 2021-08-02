@@ -14,7 +14,7 @@
 
     //svelte
     import { tick } from 'svelte';
-import { goto } from '$app/navigation';
+    import { goto } from '$app/navigation';
     const firebaseConfig = {
         apiKey: "AIzaSyAzuKsT78lSON8_qXfqCP6tmhnMlhXSDRQ",
         authDomain: "first-768e3.firebaseapp.com",
@@ -24,58 +24,73 @@ import { goto } from '$app/navigation';
         appId: "1:465550997622:web:4851f28d45667630ad0757"
     } 
 
+    let userName;
+    let Uid;
+    let sorry = false;
+
     if(!firebase.apps.length)
         firebase.initializeApp(firebaseConfig);
     else
         firebase.app();
 
-    let sorry = false;
-    let uid = "";
-
-    if(firebase.auth().currentUser == null){
-        sorry = true;
-    }
-    else{
-        uid = firebase.auth().currentUser.uid;
-    } // To add closure just push this to the end
-    sorry = false; // To remove before production
-
     const db  = firebase.firestore();
-
-    //const usr = db.collection('usr').doc(`${uid}`);
-    // usr.get()
-    // .then(dat=>{
-    //     if(dat.exists){
-    //         console.log("It exists");
-    //         console.log(dat.data());
-    //     }
-    //     else{
-    //         usr.set({Message:"Welcome to the app"});
-    //     }
-    // })
-    // .catch(err=>{
-    //     console.log(err)
-    // });
-
+    firebase.auth().onAuthStateChanged(user=>{
+        if(user == null){
+            //goto('/');
+            sorry= true;
+        }
+        else {
+            userName = (user.displayName)?user.displayName : user.email;
+            Uid = user.uid;
+            console.log("h1");
+            db.doc(`usr/${Uid}`).get()
+            .then(dat=>{
+                if(dat.exists)
+                    console.log(dat.data());
+                else{
+                    db.doc(`usr/${Uid}`).set({
+                        username:userName,
+                        groups:[]
+                    })
+                    .catch(console.error);
+                }
+            })
+            .catch(console.error);
+        }
+    });
+ 
     function signOut(){
         firebase.auth().signOut()
         .then(succ=>{
-            goto('/');
         })
         .catch(err=>{
             console.error(err);
         });
-
     }
-        
-    function createHandler(){
+
+       
+    function createHandler(event){
         console.log("create");
-
+        const creator = db.collection('chat')
+        creator.add({
+                perm:[Uid],
+                unames:[userName]
+        })
+        .then(dat=>{
+            console.log("chat room created with id ", dat.id);
+            creator.doc(dat.id).collection('chat-col').doc('Head').set({
+                name : event.detail.name
+            })
+            .catch(console.error);
+            db.doc(`usr/${Uid}`).update({groups:{name: event.detail.name, id:dat.id}})
+            .catch(console.error);
+        })
+        .catch(console.error)
     }
+
     function joinHandler(event){
-        console.log("join",event.detail.name);
         const joiner = db.collection('chat').doc(event.detail.name);
-        joiner.get()
+        joiner.collection('chat-col').doc('Head').get()
         .then(dat=>{
             if(dat.exists){
                 let gname = dat.data().name;
@@ -87,13 +102,12 @@ import { goto } from '$app/navigation';
                 .catch(console.error);
                 
                 //second
-                joiner.update({name:firebase.firestore.FieldValue.arrayUnion(userName)});
+                joiner.update({unames:firebase.firestore.FieldValue.arrayUnion(userName)});
                 db.collection('usr').doc(uid)
                 .then(dat=>{
                     console.log("Success 2");
                 })
                 .catch(console.error);
-
                 //third
                 db.collection('usr').doc(uid).update({groups:firebase.firestore.FieldValue.arrayUnion({name: gname, id: event.detail.name })})
                 .then(dat=>{
@@ -117,6 +131,7 @@ import { goto } from '$app/navigation';
         sti(arr.length-1);
     }
     let innerWidth;
+
 </script>
 
 <style>
@@ -154,41 +169,41 @@ import { goto } from '$app/navigation';
     }
 </style>
 
+<svelte:window bind:innerWidth/>
 {#if sorry}
 <Nli/>
-{/if}
+{:else}
 
-<svelte:window bind:innerWidth/>
-<div class="cont">
-    <div>
-    <Right hidden={innerWidth <= 720} on:join={joinHandler}  on:create={createHandler} on:signout={signOut}/>
+    <div class="cont">
+        <div>
+        <Right hidden={innerWidth <= 720} on:join={joinHandler}  on:create={createHandler} on:signout={signOut}/>
+        </div>
+        <div class="bc" >
+            <h1 style="font-weight: 200; font-size:30px">
+                Title
+                <hr style="margin-bottom: 1vh;">
+            </h1>
+            <div class="scroll" id="box">
+                <VirtualList bind:scrollToIndex={sti} items={arr} let:item>
+                    <div class={(item.count%3 == 0)? "right bubble":"bubble"} style="">
+                        <span style="font-size: small;color:#ccc">
+                            Name <!--Name to add-->
+                        </span>
+                        <br>
+                        {item.name}
+                    </div>
+                </VirtualList>
+            </div>
+            <div style="display: flex;">
+                <input type="text" class="bord" style="margin: 20px 10px 10px 0"> 
+                <div class="button" style="width:100px;" >Send</div>
+            </div>
+            <button on:click={func}>Click here</button>
     </div>
-    <div class="bc" >
-        <h1 style="font-weight: 200; font-size:30px">
-            Title
-            <hr style="margin-bottom: 1vh;">
-        </h1>
-        <div class="scroll" id="box">
-             <VirtualList bind:scrollToIndex={sti} items={arr} let:item>
-                <div class={(item.count%3 == 0)? "right bubble":"bubble"} style="">
-                    <span style="font-size: small;color:#ccc">
-                        Name <!--Name to add-->
-                    </span>
-                    <br>
-                    {item.name}
-                </div>
-            </VirtualList>
-        </div>
-        <div style="display: flex;">
-            <input type="text" class="bord" style="margin: 20px 10px 10px 0"> 
-            <div class="button" style="width:100px;" >Send</div>
-        </div>
-        <button on:click={func}>Click here</button>
-   </div>
-   {#if innerWidth > 720}
-   <div>
-       <GroupSider />
-   </div>
-   {/if}
-</div>
-
+    {#if innerWidth > 720}
+    <div>
+        <GroupSider />
+    </div>
+    {/if}
+    </div>
+{/if}

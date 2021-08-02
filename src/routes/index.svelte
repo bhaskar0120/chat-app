@@ -27,6 +27,7 @@
         })
         .catch(errorFunc);
     }
+
     function onClick(){
         if(email && password){
             firebase.auth().signInWithEmailAndPassword(email,password)
