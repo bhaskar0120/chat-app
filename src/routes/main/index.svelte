@@ -34,6 +34,7 @@
     let text;
     let arr = [];
     let sti;
+    let memberlist = [];
 
 
     if(!firebase.apps.length)
@@ -59,12 +60,10 @@
         else {
             userName = (user.displayName)?user.displayName : user.email;
             Uid = user.uid;
-            console.log("h1");
             db.doc(`usr/${Uid}`).get()
             .then(dat=>{
                 if(dat.exists){
                     const data = dat.data();
-                    console.log(data);
                     groups = data.groups;
                 }
                 else{
@@ -102,7 +101,8 @@
         .then(dat=>{
             console.log("chat room created with id ", dat.id);
             creator.doc(dat.id).collection('chat-col').doc('Head').set({
-                name : event.detail.name
+                name : event.detail.name,
+                unames: [userName]
             })
             .catch(console.error);
             db.doc(`usr/${Uid}`).update({groups:firebase.firestore.FieldValue.arrayUnion({name: event.detail.name, id:dat.id})})
@@ -126,6 +126,10 @@
                 })
                 .catch(console.error);
                 //third
+                joiner.collection('chat-col').doc('Head').update({
+                    unames:firebase.firestore.FieldValue.arrayUnion(userName)
+                })
+                .catch(console.error)
                 db.collection('usr').doc(Uid).update({groups:firebase.firestore.FieldValue.arrayUnion({name: gname, id: event.detail.name })})
                 .then(dat=>{
                     console.log("Success 3");
@@ -135,14 +139,13 @@
 
             }
         })
+        .catch(console.error)
     }
 
 
     function groupSelect(event){
         uns();
-        console.log("Selected group is ",event.detail.name);
         currentgname = event.detail;
-        console.log("got here")
         unsubscribe = db.collection(`chat/${currentgname.id}/chat-col`).orderBy("time").limit(25).onSnapshot(async snapshot=>{
             arr = [];
             snapshot.forEach(doc=>{
@@ -151,9 +154,14 @@
             });
             arr = [{name:'comp',message:`To add People to the group share this code ${currentgname.id}`},...arr];
             await tick();
+        });
+        db.doc(`chat/${currentgname.id}/chat-col/Head`).get()
+        .then(async dat =>{
+            memberlist = dat.data().unames;
             await tick();
             sti(arr.length-1);
-        });
+        })
+        .catch(console.error);
 
     }
 
@@ -204,7 +212,7 @@
 
 <style>
     .yellow{
-        background-color: rgba(241, 241, 93, 0.801);
+        background-color: rgba(90, 90, 90, 0.932);
         display: inline-flex;
         border-radius: 5px; 
         padding:10px;
@@ -213,10 +221,9 @@
     }
     .right{
         float:right;
-        background-color: rgb(187, 7, 211);
     }
     .bubble{
-        background-color:rgba(77, 20, 104, 0.87); 
+        background-color:rgb(126, 15, 177); 
         border-radius: 5px; 
         display: inline-block;
         padding:10px;
@@ -275,11 +282,10 @@
                 <input type="text" class="bord" style="margin: 20px 10px 10px 0" on:keypress={keyb} bind:value={text}> 
                 <div class="button" style="width:100px;" on:click={send}>Send</div>
             </div>
-            <button on:click={func}>Click here</button>
     </div>
     {#if innerWidth > 720}
     <div>
-        <GroupSider />
+        <GroupSider data={memberlist} />
     </div>
     {/if}
     </div>
