@@ -5,8 +5,15 @@
 
     export let hidden = false;
     export let showB = true;
+    export let listarr;
     let gname = "", newname="";
     let clicked = false;
+    let count = listarr.length;
+    for(let i = 0; i < count;++i){
+        let x = listarr[i];
+        x.glow=false;
+    }
+
     const dispatch = createEventDispatcher();
     function joinHandler(){
         if(gname)
@@ -21,12 +28,15 @@
         dispatch('signout',{name:"logout"});
     }
 
-    let count = 0;
     //Think of a better change function by remembering the last and current
+    let selected = -1;
     function change(event){
-        for(let i = 0; i < count; ++i){
-            if(event.detail.index == i){}
-        }
+        listarr[event.detail.index].glow ^= true;
+        if(selected > -1)
+            listarr[selected].glow = false;
+        selected = listarr[event.detail.index].glow?event.detail.index:-1
+        if(selected > -1)
+            dispatch('group',{name:listarr[selected].name,id:listarr[selected].id})
     }
 </script>
 
@@ -78,7 +88,9 @@
 
     <input type="text" placeholder="New Group Name" class="bord" bind:value={newname} style="font-size: medium; ">
     <div class={(newname)?"button":"gray"} style="width:12vw;font-size:large;text-align: center; margin: 0 0 0 .7vw" on:click={createHandler}>Create Group</div>
-    <List on:changed={change}/>
+    {#each listarr as item, i}
+        <List on:changed={change} highl={item.glow} name={item.name} index={i}/>
+    {/each}
     <div class="button"style="width:12vw;font-size:large;text-align: center; margin: 10vh 0 0 .7vw; " on:click={signOut}>Sign Out</div>
 </div>
 {/if}

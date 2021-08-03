@@ -2,13 +2,14 @@
     import {createEventDispatcher} from 'svelte';
     export let highl = false;
     export let index;
+    export let name = "Bhaskar"
     const dip= createEventDispatcher();
     function onClick(){
+        //highl ^= true;
         dip('changed', {val:highl,index:index});
 
     }
 
-    let name = "Bhaskaar";
 </script>
 
 <style>
@@ -27,6 +28,6 @@
     }
 </style>
 
-<div  class={highl?"high":""} on:click={onClick}>
+<div  class:high="{highl}" on:click={onClick}>
     {name}
 </div>

@@ -13,7 +13,7 @@
     import GroupSider from './_groupSider.svelte';
 
     //svelte
-    import { tick } from 'svelte';
+    import { onDestroy, tick } from 'svelte';
     import { goto } from '$app/navigation';
     const firebaseConfig = {
         apiKey: "AIzaSyAzuKsT78lSON8_qXfqCP6tmhnMlhXSDRQ",
@@ -27,6 +27,14 @@
     let userName;
     let Uid;
     let sorry = false;
+    let groups = [];
+    let unsubscribe;
+    let currentgname = {name:"Title",id:""};
+    let innerWidth;
+    let text;
+    let arr = [];
+    let sti;
+
 
     if(!firebase.apps.length)
         firebase.initializeApp(firebaseConfig);
@@ -34,9 +42,18 @@
         firebase.app();
 
     const db  = firebase.firestore();
+
+    function setGroup(){
+        db.doc(`usr/${Uid}`).get()
+        .then(dat=>{
+            groups = dat.data().groups;
+        })
+        .catch(console.error);
+    }
+
     firebase.auth().onAuthStateChanged(user=>{
         if(user == null){
-            //goto('/');
+            goto('/');
             sorry= true;
         }
         else {
@@ -45,8 +62,11 @@
             console.log("h1");
             db.doc(`usr/${Uid}`).get()
             .then(dat=>{
-                if(dat.exists)
-                    console.log(dat.data());
+                if(dat.exists){
+                    const data = dat.data();
+                    console.log(data);
+                    groups = data.groups;
+                }
                 else{
                     db.doc(`usr/${Uid}`).set({
                         username:userName,
@@ -58,8 +78,11 @@
             .catch(console.error);
         }
     });
+
+    onDestroy(uns);
  
     function signOut(){
+        uns();
         firebase.auth().signOut()
         .then(succ=>{
         })
@@ -82,7 +105,8 @@
                 name : event.detail.name
             })
             .catch(console.error);
-            db.doc(`usr/${Uid}`).update({groups:{name: event.detail.name, id:dat.id}})
+            db.doc(`usr/${Uid}`).update({groups:firebase.firestore.FieldValue.arrayUnion({name: event.detail.name, id:dat.id})})
+            .then(setGroup)
             .catch(console.error);
         })
         .catch(console.error)
@@ -95,23 +119,17 @@
             if(dat.exists){
                 let gname = dat.data().name;
                 //first
-                joiner.update({perm:firebase.firestore.FieldValue.arrayUnion(uid)})
+                joiner.update({perm:firebase.firestore.FieldValue.arrayUnion(Uid),
+                    unames:firebase.firestore.FieldValue.arrayUnion(userName)})
                 .then(dat=>{
                     console.log("Success 1");
                 })
                 .catch(console.error);
-                
-                //second
-                joiner.update({unames:firebase.firestore.FieldValue.arrayUnion(userName)});
-                db.collection('usr').doc(uid)
-                .then(dat=>{
-                    console.log("Success 2");
-                })
-                .catch(console.error);
                 //third
-                db.collection('usr').doc(uid).update({groups:firebase.firestore.FieldValue.arrayUnion({name: gname, id: event.detail.name })})
+                db.collection('usr').doc(Uid).update({groups:firebase.firestore.FieldValue.arrayUnion({name: gname, id: event.detail.name })})
                 .then(dat=>{
-                    console.log("Success 3")
+                    console.log("Success 3");
+                    setGroup();
                 })
                 .catch(console.error);
 
@@ -119,27 +137,86 @@
         })
     }
 
-    let arr = [];
-    let count = 1;
-    let sti;
+
+    function groupSelect(event){
+        uns();
+        console.log("Selected group is ",event.detail.name);
+        currentgname = event.detail;
+        console.log("got here")
+        unsubscribe = db.collection(`chat/${currentgname.id}/chat-col`).orderBy("time").limit(25).onSnapshot(async snapshot=>{
+            arr = [];
+            snapshot.forEach(doc=>{
+                if(doc.id != 'Head')
+                    arr.push(doc.data());
+            });
+            arr = [{name:'comp',message:`To add People to the group share this code ${currentgname.id}`},...arr];
+            await tick();
+            await tick();
+            sti(arr.length-1);
+        });
+
+    }
+
+    function uns(){
+        if(currentgname.id != "")
+            unsubscribe();
+    }
+
+    function beforeunload(){
+        uns();
+    }
+
 
     async function func(){
-        arr = [...arr,{name: `item${count}`, count: count}];
-        count++;
-        await tick();
-        await tick();
-        sti(arr.length-1);
+        // arr = [...arr,{name: `item${count}`, count: count}];
+        // count++;
+        // await tick();
+        // await tick();
+        // sti(arr.length-1);
     }
-    let innerWidth;
+    function keyb(event){
+        if(event.keyCode == 13)
+            send();
+    }
+    function send(){
+        if(currentgname.id){
+            db.collection(`chat/${currentgname.id}/chat-col`).add({
+                uid:Uid,
+                time:firebase.firestore.FieldValue.serverTimestamp(),
+                name:userName,
+                message:text
+            })
+            .then(async dat=>{
+                arr = [...arr,{message: text, name:userName}];
+                await tick();
+                await tick();
+                sti(arr.length-1);
+                text="";
+            })
+            .catch(console.error);
+        }
+        else{
+
+        }
+    }
 
 </script>
 
 <style>
+    .yellow{
+        background-color: rgba(241, 241, 93, 0.801);
+        display: inline-flex;
+        border-radius: 5px; 
+        padding:10px;
+        margin : 5px 20px 10px 20px;
+        font-size: larger;
+    }
     .right{
         float:right;
+        background-color: rgb(187, 7, 211);
     }
     .bubble{
-        background-color:darkviolet; 
+        background-color:rgba(77, 20, 104, 0.87); 
         border-radius: 5px; 
         display: inline-block;
         padding:10px;
@@ -169,34 +246,34 @@
     }
 </style>
 
-<svelte:window bind:innerWidth/>
+<svelte:window bind:innerWidth on:beforeunload={beforeunload}/>
 {#if sorry}
 <Nli/>
 {:else}
 
     <div class="cont">
         <div>
-        <Right hidden={innerWidth <= 720} on:join={joinHandler}  on:create={createHandler} on:signout={signOut}/>
+        <Right listarr={groups} hidden={innerWidth <= 720} on:join={joinHandler}  on:create={createHandler} on:signout={signOut} on:group={groupSelect}/>
         </div>
         <div class="bc" >
             <h1 style="font-weight: 200; font-size:30px">
-                Title
+                {currentgname.name}
                 <hr style="margin-bottom: 1vh;">
             </h1>
             <div class="scroll" id="box">
                 <VirtualList bind:scrollToIndex={sti} items={arr} let:item>
-                    <div class={(item.count%3 == 0)? "right bubble":"bubble"} style="">
+                    <div class={(item.name == userName)? "right bubble" :(item.name == "comp")? "yellow":"bubble"} style="">
                         <span style="font-size: small;color:#ccc">
-                            Name <!--Name to add-->
+                            {item.name}
                         </span>
                         <br>
-                        {item.name}
+                        {item.message}
                     </div>
                 </VirtualList>
             </div>
             <div style="display: flex;">
-                <input type="text" class="bord" style="margin: 20px 10px 10px 0"> 
-                <div class="button" style="width:100px;" >Send</div>
+                <input type="text" class="bord" style="margin: 20px 10px 10px 0" on:keypress={keyb} bind:value={text}> 
+                <div class="button" style="width:100px;" on:click={send}>Send</div>
             </div>
             <button on:click={func}>Click here</button>
     </div>
