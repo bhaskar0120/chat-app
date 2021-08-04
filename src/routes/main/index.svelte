@@ -44,16 +44,8 @@ import Sidebar from './_sidebar.svelte';
     else
         firebase.app();
 
+
     const db  = firebase.firestore();
-
-    function setGroup(){
-        db.doc(`usr/${Uid}`).get()
-        .then(dat=>{
-            groups = dat.data().groups;
-        })
-        .catch(console.error);
-    }
-
     firebase.auth().onAuthStateChanged(user=>{
         if(user == null){
             goto('/');
@@ -80,7 +72,14 @@ import Sidebar from './_sidebar.svelte';
         }
     });
 
-    onDestroy(uns);
+    function setGroup(){
+        db.doc(`usr/${Uid}`).get()
+        .then(dat=>{
+            groups = dat.data().groups;
+        })
+        .catch(console.error);
+    }
+
  
     function signOut(){
         uns();
@@ -155,7 +154,7 @@ import Sidebar from './_sidebar.svelte';
                 if(doc.id != 'Head')
                     arr.push(doc.data());
             });
-            arr = [{name:'comp',message:`To add People to the group share this code ${currentgname.id}`},...arr];
+            arr = [{name:'computer',message:`To add People to the group share this code ${currentgname.id}`},...arr];
             await tick();
         });
         db.doc(`chat/${currentgname.id}/chat-col/Head`).get()
@@ -182,14 +181,7 @@ import Sidebar from './_sidebar.svelte';
             state = event.detail.state;
         }
     }
-
-    async function func(){
-        // arr = [...arr,{name: `item${count}`, count: count}];
-        // count++;
-        // await tick();
-        // await tick();
-        // sti(arr.length-1);
-    }
+    
     function keyb(event){
         if(event.keyCode == 13)
             send();
@@ -212,7 +204,8 @@ import Sidebar from './_sidebar.svelte';
             .catch(console.error);
         }
         else{
-
+            arr = [{name:'computer',message:"Please select a group"}];
+            text = "";
         }
     }
 
@@ -221,7 +214,7 @@ import Sidebar from './_sidebar.svelte';
 <style>
     .yellow{
         background-color: rgba(90, 90, 90, 0.932);
-        display: inline-flex;
+        display: flex;
         border-radius: 5px; 
         padding:10px;
         margin : 5px 20px 10px 20px;
@@ -280,7 +273,7 @@ import Sidebar from './_sidebar.svelte';
             </h1>
             <div class="scroll" id="box">
                 <VirtualList bind:scrollToIndex={sti} items={arr} let:item>
-                    <div class={(item.name == userName)? "right bubble" :(item.name == "comp")? "yellow":"bubble"} style="">
+                    <div class={(item.name == userName)? "right bubble" :(item.name == "computer")? "yellow":"bubble"} style="">
                         <span style="font-size: small;color:#ccc">
                             {item.name}
                         </span>
