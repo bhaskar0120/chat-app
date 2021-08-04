@@ -48,7 +48,6 @@ import Sidebar from './_sidebar.svelte';
     const db  = firebase.firestore();
     firebase.auth().onAuthStateChanged(user=>{
         if(user == null){
-            goto('/');
             sorry= true;
         }
         else {
