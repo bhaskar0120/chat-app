@@ -15,6 +15,7 @@
     //svelte
     import { onDestroy, tick } from 'svelte';
     import { goto } from '$app/navigation';
+import Sidebar from './_sidebar.svelte';
     const firebaseConfig = {
         apiKey: "AIzaSyAzuKsT78lSON8_qXfqCP6tmhnMlhXSDRQ",
         authDomain: "first-768e3.firebaseapp.com",
@@ -26,6 +27,7 @@
 
     let userName;
     let Uid;
+    let state = 1;
     let sorry = false;
     let groups = [];
     let unsubscribe;
@@ -146,6 +148,7 @@
     function groupSelect(event){
         uns();
         currentgname = event.detail;
+        state = 2;
         unsubscribe = db.collection(`chat/${currentgname.id}/chat-col`).orderBy("time").limit(25).onSnapshot(async snapshot=>{
             arr = [];
             snapshot.forEach(doc=>{
@@ -174,6 +177,11 @@
         uns();
     }
 
+    function stateChange(event){
+        if(event.detail.state != state){
+            state = event.detail.state;
+        }
+    }
 
     async function func(){
         // arr = [...arr,{name: `item${count}`, count: count}];
@@ -244,7 +252,6 @@
     }
     @media screen and (max-width:720px){
         .scroll{
-            background-color: aqua;
             width: 80vw;
         }
         .bc{
@@ -258,10 +265,14 @@
 <Nli/>
 {:else}
 
-    <div class="cont">
+    <div class={innerWidth >= 720? "cont":"smallcont"}>
         <div>
-        <Right listarr={groups} hidden={innerWidth <= 720} on:join={joinHandler}  on:create={createHandler} on:signout={signOut} on:group={groupSelect}/>
+            <Sidebar show={innerWidth <= 720} on:stateChanged={stateChange}/>
         </div>
+        <div>
+        <Right showB={innerWidth > 720} listarr={groups} hidden={innerWidth <= 720 && state != 1} on:join={joinHandler}  on:create={createHandler} on:signout={signOut} on:group={groupSelect}/>
+        </div>
+        {#if innerWidth > 720 || state == 2}
         <div class="bc" >
             <h1 style="font-weight: 200; font-size:30px">
                 {currentgname.name}
@@ -282,11 +293,12 @@
                 <input type="text" class="bord" style="margin: 20px 10px 10px 0" on:keypress={keyb} bind:value={text}> 
                 <div class="button" style="width:100px;" on:click={send}>Send</div>
             </div>
-    </div>
-    {#if innerWidth > 720}
-    <div>
-        <GroupSider data={memberlist} />
-    </div>
-    {/if}
+        </div>
+        {/if}
+        {#if  state == 3 || innerWidth > 720}
+            <div>
+                <GroupSider showB={innerWidth > 720} data={memberlist} />
+            </div>
+        {/if}
     </div>
 {/if}
